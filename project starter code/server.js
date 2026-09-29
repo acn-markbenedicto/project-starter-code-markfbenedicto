@@ -35,14 +35,19 @@ import {filterImageFromURL, deleteLocalFiles} from './util/util.js';
     } 
    
     const validImageExtensions = [".jpg", ".jpeg", ".png", ".bmp", ".gif"];
-    const urlPath = new URL(requestedImageUrl).pathname;
+    let urlPath;
+    try {
+      urlPath = new URL(requestedImageUrl).pathname;
+    } catch (error) {
+      return res.status(422).send("Invalid image_url query parameter");
+    }
     const isValidImageUrl = validImageExtensions.some(ext => urlPath.toLowerCase().endsWith(ext));
     if (!isValidImageUrl) {
-      return res.status(400).send("Invalid image_url query parameter");
+      return res.status(422).send("Invalid image_url query parameter");
     }
     try {
       const filteredPath = await filterImageFromURL(requestedImageUrl);
-      res.status(200).sendFile(filteredPath);
+      res.status(200).send(filteredPath);
       res.on('finish', () => deleteLocalFiles([filteredPath]));
     } catch (error) {
       res.status(500).send("Error filtering image");

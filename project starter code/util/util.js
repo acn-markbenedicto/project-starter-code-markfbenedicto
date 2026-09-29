@@ -9,24 +9,25 @@ import Jimp from "jimp";
 //    inputURL: string - a publicly accessible url to an image file
 // RETURNS
 //    an absolute path to a filtered image locally saved file
- export async function filterImageFromURL(inputURL) {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const photo = await Jimp.read(inputURL);
-      const outpath =
-        "/tmp/filtered." + Math.floor(Math.random() * 2000) + ".jpg";
-      await photo
-        .resize(256, 256) // resize
-        .quality(60) // set JPEG quality
-        .greyscale() // set greyscale
-        .write(outpath, (img) => {
-          resolve(outpath);
-        });
-    } catch (error) {
-      console.error("Error filtering image:", error);
-      reject(error);
-    }
-  });
+export async function filterImageFromURL(inputURL) {
+  try {
+    const response = await fetch(inputURL);
+    const buffer = await response.arrayBuffer();
+    const photo = await Jimp.read(buffer);
+    const outpath =
+      "/tmp/filtered." + Math.floor(Math.random() * 2000) + ".jpg";
+
+    await photo
+      .resize(256, 256) // resize
+      .quality(60) // set JPEG quality
+      .greyscale(); // set greyscale
+
+    await photo.writeAsync(outpath);
+    return outpath;
+  } catch (error) {
+    console.error("Error filtering image:", error);
+    throw error;
+  }
 }
 
 // deleteLocalFiles
